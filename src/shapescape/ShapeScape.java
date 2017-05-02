@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -15,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,7 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 	private static final long serialVersionUID = 8252030148986275166L;
 	
 	private AffineTransform worldSpace;
+	private AffineTransform viewSpace;
 	
 	private File saveFile;
 
@@ -94,7 +95,7 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 	
 	public ShapeScape()
 	{
-		this.worldSpace = new AffineTransform();
+		this.viewSpace = new AffineTransform();
 		
 		this.model = new Model();
 		
@@ -160,6 +161,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 			g2d.copyArea(0, 0, getWidth(), gridWindowY, 0, copyY);
 		}
 		
+		/*Draw the model relative to the user's current view*/
+		worldSpace = g2d.getTransform();
+		g2d.setTransform(viewSpace);
 		
 		if(model.getVertices().size() > 0)
 		{
@@ -195,6 +199,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 				g2d.fill(v.getGrabBox());
 			}
 		}
+		
+		/*Revert to world space for overlays.*/
+		g2d.setTransform(worldSpace);
 		
 		if(selecting)
 		{
@@ -264,13 +271,42 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 	
 	public Vertex getVertexAt(Point point)
 	{
-		for(Vertex v : model.getVertices())
+		Point2D[] localPoints = new Point2D[model.getVertices().size()];
+		Point2D[] worldPoints = new Point2D[model.getVertices().size()];
+		
+		model.getVertices().toArray(localPoints);
+		
+		this.toWorldSpace(localPoints, worldPoints, model.getTransform());
+		
+		for(int i = 0; i < worldPoints.length; i++)
 		{
-			if(v.getGrabBox().contains(point))
-				return v;
+			if(point.distanceSq(worldPoints[i]) < 5)
+				return model.getVertices().get(i);
 		}
 		
 		return null;
+	}
+	
+	public List<Vertex> getVerticesIn(Rectangle bounds)
+	{
+		List<Vertex> result = new ArrayList<Vertex>();
+		
+		Point2D localPoints[] = new Point2D[model.getVertices().size()];
+		Point2D worldPoints[] = new Point2D[model.getVertices().size()];
+		
+		model.getVertices().toArray(localPoints);
+		
+		this.toWorldSpace(localPoints, worldPoints, model.getTransform());
+		
+		for(int i = 0; i < worldPoints.length; i++)
+		{
+			if(bounds.contains(worldPoints[i]))
+			{
+				result.add(model.getVertices().get(i));
+			}
+		}
+		
+		return result;
 	}
 	
 	public List<Vertex> getVertices()
@@ -404,12 +440,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 			
 			repaint();
 			
-			for(Vertex v : model.getVertices())
+			for(Vertex v : this.getVerticesIn(selectionArea))
 			{
-				if(selectionArea.contains(v.getGrabBox()))
-				{
-					v.setSelected(true);
-				}
+				v.setSelected(true);
 			}
 			
 			selecting = false;
@@ -457,13 +490,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		}
 		else if(viewDragging)
 		{
-			worldSpace.translate(dragAnchor.x-e.getPoint().x, dragAnchor.y-e.getPoint().y);
 			dragAnchor = e.getPoint();
 			
-			model.transform(worldSpace);
 			repaint();
-			
-			System.out.println(worldSpace.getTranslateX());
 			return;
 		}
 	}
@@ -474,5 +503,29 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		updateCursor(e);
 		
 		repaint();
+	}
+	
+	public void toWorldSpace(Point2D[] srcPoints, Point2D[] dstPoints, AffineTransform transform)
+	{
+		AffineTransform pointSpace = new AffineTransform(worldSpace);
+		
+		pointSpace.concatenate(viewSpace);
+		pointSpace.concatenate(transform);
+		
+		pointSpace.transform(srcPoints, 0, dstPoints, 0, dstPoints.length);
+	}
+	
+	public Point2D toWorldSpace(Point2D point, AffineTransform transform)
+	{
+		Point2D worldPoint = new Point2D.Double();
+		
+		AffineTransform pointSpace = new AffineTransform(worldSpace);
+		
+		pointSpace.concatenate(viewSpace);
+		pointSpace.concatenate(transform);
+		
+		pointSpace.transform(point, worldPoint);
+		
+		return worldPoint;
 	}
 }

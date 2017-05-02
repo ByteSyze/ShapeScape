@@ -37,6 +37,11 @@ public class Model
 		transform.translate(x, y);
 	}
 	
+	public AffineTransform getTransform()
+	{
+		return transform;
+	}
+	
 	public void addVertex(Vertex v)
 	{
 		vertices.add(v);
