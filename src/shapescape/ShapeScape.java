@@ -13,6 +13,8 @@ import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
@@ -29,7 +31,7 @@ import shapescape.command.CreateVertexCommand;
 import shapescape.command.DragCommand;
 import shapescape.listener.KeyboardListener;
 
-public class ShapeScape extends JPanel implements MouseListener, MouseMotionListener
+public class ShapeScape extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener
 {
 	private static final long serialVersionUID = 8252030148986275166L;
 	
@@ -47,6 +49,8 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 	private Point cursor;
 	
 	private Point dragAnchor;
+	
+	private float zoomFactor = 10f;
 	
 	private boolean viewDragging = false;
 	
@@ -112,6 +116,8 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
+		this.addMouseWheelListener(this);
+		
 		this.setFocusable(true);
 		this.addKeyListener(new KeyboardListener(this));
 		
@@ -216,8 +222,10 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		g2d.setPaint(cursorColor);
 		g2d.fillOval(cursor.x-2, cursor.y-2, 4, 4);
 		
+		Point2D worldCursor = viewToWorld(cursor);
+		
 		g2d.setPaint(Color.WHITE);
-		g2d.drawString(String.format("%d, %d" , cursor.x, cursor.y), 3, getHeight()-3);
+		g2d.drawString(String.format("%s, %s" , worldCursor.getX(), worldCursor.getY()), 3, getHeight()-3);
 	}
 	
 	public void undoLastCommand()
@@ -547,5 +555,15 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		}
 		
 		return worldPoint;
+	}
+
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e)
+	{
+		double zoom = (10-e.getWheelRotation())/10f;
+		
+		viewSpace.scale(zoom,zoom);
+		
+		repaint();
 	}
 }
