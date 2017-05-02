@@ -1,4 +1,4 @@
-package modeler.command;
+package shapescape.command;
 
 import java.util.ArrayList;
 import java.util.List;

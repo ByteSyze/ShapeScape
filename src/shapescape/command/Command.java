@@ -1,4 +1,4 @@
-package modeler.command;
+package shapescape.command;
 
 public interface Command 
 {

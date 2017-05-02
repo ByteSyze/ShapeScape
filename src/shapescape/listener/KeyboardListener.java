@@ -1,15 +1,15 @@
-package modeler.listener;
+package shapescape.listener;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import modeler.Modeler;
+import shapescape.ShapeScape;
 
 public class KeyboardListener implements KeyListener
 {
-	private Modeler modeler;
+	private ShapeScape modeler;
 	
-	public KeyboardListener(Modeler modeler)
+	public KeyboardListener(ShapeScape modeler)
 	{
 		this.modeler = modeler;
 	}

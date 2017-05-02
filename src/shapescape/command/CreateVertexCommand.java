@@ -1,19 +1,19 @@
-package modeler.command;
+package shapescape.command;
 
 import java.awt.Point;
 
-import modeler.Modeler;
-import modeler.Vertex;
+import shapescape.ShapeScape;
+import shapescape.Vertex;
 
 public class CreateVertexCommand implements ReversibleCommand
 {
-	private Modeler modeler;
+	private ShapeScape modeler;
 	
 	private Point point;
 	
 	private Vertex vertex;
 	
-	public CreateVertexCommand(Modeler modeler, Point point)
+	public CreateVertexCommand(ShapeScape modeler, Point point)
 	{
 		this.modeler = modeler;
 		

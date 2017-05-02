@@ -1,14 +1,14 @@
-package modeler.command;
+package shapescape.command;
 
 import java.awt.Point;
 import java.util.List;
 
-import modeler.Modeler;
-import modeler.Vertex;
+import shapescape.ShapeScape;
+import shapescape.Vertex;
 
 public class DragCommand implements ReversibleCommand
 {
-	private Modeler modeler;
+	private ShapeScape modeler;
 	private List<Vertex> vertices;
 	
 	private Point startPoint;
@@ -17,7 +17,7 @@ public class DragCommand implements ReversibleCommand
 	private int totalDragX = 0;
 	private int totalDragY = 0;
 	
-	public DragCommand(Modeler modeler, List<Vertex> vertices, Point startPoint, Point endPoint)
+	public DragCommand(ShapeScape modeler, List<Vertex> vertices, Point startPoint, Point endPoint)
 	{
 		this.modeler = modeler;
 		this.vertices = vertices;

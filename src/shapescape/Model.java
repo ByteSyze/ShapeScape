@@ -1,4 +1,4 @@
-package modeler;
+package shapescape;
 
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -57,27 +57,6 @@ public class Model
 	public List<Vertex> getVertices()
 	{
 		return vertices;
-	}
-	
-	public List<Vertex> getAbsoluteVertices()
-	{
-		Vertex[] transformed = new Vertex[vertices.size()];
-		
-		vertices.toArray(transformed);
-		
-		for(int i = 0; i < transformed.length; i++)
-		{
-			transformed[i] = transformed[i].clone();
-		}
-		
-		try {
-			transform.createInverse().transform(transformed, 0, transformed, 0, transformed.length);
-		} catch (NoninvertibleTransformException e)
-		{
-			e.printStackTrace();
-		}
-		
-		return (List<Vertex>)Arrays.asList(transformed);
 	}
 	
 	public Rectangle getBounds()

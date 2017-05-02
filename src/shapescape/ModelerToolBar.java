@@ -1,4 +1,4 @@
-package modeler;
+package shapescape;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -20,7 +20,7 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 {
 	private static final long serialVersionUID = 2599112429170731548L;
 	
-	private Modeler modeler;
+	private ShapeScape modeler;
 	
 	private JFileChooser browser;
 	
@@ -31,7 +31,7 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 	
 	private JMenuItem undoItem;
 
-	public ModelerToolBar(Modeler modeler)
+	public ModelerToolBar(ShapeScape modeler)
 	{
 		this.modeler = modeler;
 		
