@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.ArrayList;
@@ -224,9 +225,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		commandQueue.undoLastCommand();
 	}
 	
-	public void createVertexAt(Point point)
+	public void createVertexAt(Point2D point2d)
 	{
-		createVertexAt(point.x, point.y);
+		createVertexAt((int)point2d.getX(), (int)point2d.getY());
 	}
 	
 	public void createVertexAt(int x, int y)
@@ -361,7 +362,7 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 			{
 				clearSelectedVertices();
 
-				createVertexAt(cursor);
+				createVertexAt(viewToWorld(cursor));
 				
 				repaint();
 			}
@@ -490,6 +491,7 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		}
 		else if(viewDragging)
 		{
+			viewSpace.translate(cursor.x-dragAnchor.x, cursor.y-dragAnchor.y);
 			dragAnchor = e.getPoint();
 			
 			repaint();
@@ -525,6 +527,24 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		pointSpace.concatenate(transform);
 		
 		pointSpace.transform(point, worldPoint);
+		
+		return worldPoint;
+	}
+	
+	public Point2D viewToWorld(Point2D point)
+	{
+		Point2D worldPoint = new Point2D.Double();
+		
+		AffineTransform pointSpace = new AffineTransform(worldSpace);
+		
+		pointSpace.concatenate(viewSpace);
+		
+		try {
+			pointSpace.inverseTransform(point, worldPoint);
+		} catch (NoninvertibleTransformException e)
+		{
+			e.printStackTrace();
+		}
 		
 		return worldPoint;
 	}
