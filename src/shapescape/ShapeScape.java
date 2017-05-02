@@ -1,4 +1,4 @@
-package modeler;
+package shapescape;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -23,12 +23,12 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
-import modeler.command.CommandQueue;
-import modeler.command.CreateVertexCommand;
-import modeler.command.DragCommand;
-import modeler.listener.KeyboardListener;
+import shapescape.command.CommandQueue;
+import shapescape.command.CreateVertexCommand;
+import shapescape.command.DragCommand;
+import shapescape.listener.KeyboardListener;
 
-public class Modeler extends JPanel implements MouseListener, MouseMotionListener
+public class ShapeScape extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 8252030148986275166L;
 	
@@ -65,8 +65,6 @@ public class Modeler extends JPanel implements MouseListener, MouseMotionListene
 	private Stroke normalStroke;
 	private Stroke edgeStroke;
 	
-	private Paint normalPaint;
-	
 	private CommandQueue commandQueue;
 	
 	private DragCommand dragCmd;
@@ -81,7 +79,7 @@ public class Modeler extends JPanel implements MouseListener, MouseMotionListene
 		
 		JFrame frame = new JFrame("Vector Modeler");
 		
-		Modeler modeler = new Modeler();
+		ShapeScape modeler = new ShapeScape();
 		ModelerToolBar toolbar = new ModelerToolBar(modeler);
 		
 		frame.setLayout(new BorderLayout());
@@ -94,7 +92,7 @@ public class Modeler extends JPanel implements MouseListener, MouseMotionListene
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-	public Modeler()
+	public ShapeScape()
 	{
 		this.worldSpace = new AffineTransform();
 		
@@ -166,8 +164,6 @@ public class Modeler extends JPanel implements MouseListener, MouseMotionListene
 		if(model.getVertices().size() > 0)
 		{
 			Vertex lastV = model.getVertices().get(0);
-			
-			normalPaint = g2d.getPaint();
 
 			g2d.setStroke(edgeStroke);
 			
