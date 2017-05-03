@@ -50,8 +50,6 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 	
 	private Point dragAnchor;
 	
-	private float zoomFactor = 10f;
-	
 	private boolean viewDragging = false;
 	
 	private boolean vertexDragging = false;
@@ -70,6 +68,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 	
 	private Stroke normalStroke;
 	private Stroke edgeStroke;
+	
+	private int lastWidth;
+	private int lastHeight;
 	
 	private CommandQueue commandQueue;
 	
@@ -127,6 +128,14 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 	public void paint(Graphics g)
 	{	
 		super.paint(g);
+		
+		int deltaWidth = (getWidth()-lastWidth)/2;
+		int deltaHeight = (getHeight()-lastHeight)/2;
+		
+		lastWidth = getWidth();
+		lastHeight = getHeight();
+		
+		viewSpace.translate(deltaWidth, deltaHeight);
 		
 		Graphics2D g2d = (Graphics2D)g;
 		
@@ -233,9 +242,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		commandQueue.undoLastCommand();
 	}
 	
-	public void createVertexAt(Point2D point2d)
+	public void createVertexAt(Point2D point)
 	{
-		createVertexAt((int)point2d.getX(), (int)point2d.getY());
+		createVertexAt((int)point.getX(), (int)point.getY());
 	}
 	
 	public void createVertexAt(int x, int y)
@@ -278,7 +287,7 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		return true;
 	}
 	
-	public Vertex getVertexAt(Point point)
+	public Vertex getVertexAt(Point2D point)
 	{
 		Point2D[] localPoints = new Point2D[model.getVertices().size()];
 		Point2D[] worldPoints = new Point2D[model.getVertices().size()];
@@ -289,7 +298,7 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		
 		for(int i = 0; i < worldPoints.length; i++)
 		{
-			if(point.distanceSq(worldPoints[i]) < 5)
+			if(point.distanceSq(worldPoints[i]) < 25)
 				return model.getVertices().get(i);
 		}
 		
@@ -419,12 +428,11 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 			{
 				clearSelectedVertices();
 				
-				for(Vertex v : model.getVertices())
+				Vertex clicked = getVertexAt(cursor);
+				
+				if(clicked != null)
 				{
-					if(v.getGrabBox().contains(cursor))
-					{
-						v.setSelected(true);
-					}
+					clicked.setSelected(true);
 				}
 				
 				if(!selectionEmpty())
