@@ -50,6 +50,10 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 	
 	private Point dragAnchor;
 	
+	//User View Options
+	private boolean showGrid = true;
+	private boolean showBounds = false;
+	
 	private boolean viewDragging = false;
 	
 	private boolean vertexDragging = false;
@@ -147,40 +151,8 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		
 		g2d.fillRect(0, 0, getWidth(), getHeight());
 		
-		g2d.setPaint(Color.GRAY);
-		
-		int xCopyNum = 100/gridSize;
-		int yCopyNum = 100/gridSize;
-		
-		int gridWindowX = xCopyNum*gridSize;
-		int gridWindowY = yCopyNum*gridSize;
-		
-		int gridXOffset = -(int)(viewSpace.getTranslateX()%gridSize);
-		int gridYOffset = -(int)(viewSpace.getTranslateY()%gridSize);
-		
-		/*
-		 Create a small subsection of grid, then copy it to the rest of the panel.
-		 */
-		for(int gridX = 0; gridX < gridWindowX; gridX++)
-		{
-			for(int gridY = 0; gridY < gridWindowY; gridY++)
-			{
-				if(((gridX+gridXOffset) % gridSize == 0) || ((gridY+gridYOffset) % gridSize == 0))
-				{
-					g2d.drawLine(gridX, gridY, gridX, gridY);
-				}
-			}
-		}
-
-		for(int copyX = 0; copyX < getWidth(); copyX += gridWindowX)
-		{
-			g2d.copyArea(0, 0, gridWindowX, gridWindowY, copyX, 0);
-		}
-		
-		for(int copyY = 0; copyY < getHeight(); copyY += gridWindowY)
-		{
-			g2d.copyArea(0, 0, getWidth(), gridWindowY, 0, copyY);
-		}
+		if(showGrid)
+			drawGrid(g2d);
 		
 		/*Draw the model relative to the user's current view*/
 		g2d.setTransform(viewSpace);
@@ -220,8 +192,11 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 			}
 		}
 		
-		g2d.setColor(Color.GREEN);
-		g2d.draw(model.generateBounds());
+		if(showBounds)
+		{
+			g2d.setColor(Color.GREEN);
+			g2d.draw(model.generateBounds());
+		}
 		
 		/*Revert to world space for overlays.*/
 		g2d.setTransform(worldSpace);
@@ -242,6 +217,44 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		
 		g2d.setPaint(Color.WHITE);
 		g2d.drawString(String.format("%s, %s" , worldCursor.getX(), worldCursor.getY()), 3, getHeight()-3);
+	}
+	
+	private void drawGrid(Graphics2D g2d)
+	{
+		g2d.setPaint(Color.GRAY);
+		
+		int xCopyNum = 100/gridSize;
+		int yCopyNum = 100/gridSize;
+		
+		int gridWindowX = xCopyNum*gridSize;
+		int gridWindowY = yCopyNum*gridSize;
+		
+		int gridXOffset = -(int)(viewSpace.getTranslateX()%gridSize);
+		int gridYOffset = -(int)(viewSpace.getTranslateY()%gridSize);
+		
+		/*
+		 Create a small subsection of grid, then copy it to the rest of the panel.
+		 */
+		for(int gridX = 0; gridX < gridWindowX; gridX++)
+		{
+			for(int gridY = 0; gridY < gridWindowY; gridY++)
+			{
+				if(((gridX+gridXOffset) % gridSize == 0) || ((gridY+gridYOffset) % gridSize == 0))
+				{
+					g2d.drawLine(gridX, gridY, gridX, gridY);
+				}
+			}
+		}
+
+		for(int copyX = 0; copyX < getWidth(); copyX += gridWindowX)
+		{
+			g2d.copyArea(0, 0, gridWindowX, gridWindowY, copyX, 0);
+		}
+		
+		for(int copyY = 0; copyY < getHeight(); copyY += gridWindowY)
+		{
+			g2d.copyArea(0, 0, getWidth(), gridWindowY, 0, copyY);
+		}
 	}
 	
 	public void resetScene()
@@ -363,7 +376,17 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 	{
 		return gridSize;
 	}
-	
+
+	public void setShowGrid(boolean showGrid) 
+	{
+		this.showGrid = showGrid;
+	}
+
+	public void setShowBounds(boolean showBounds) 
+	{
+		this.showBounds = showBounds;
+	}
+
 	public File getSaveFile()
 	{
 		return saveFile;

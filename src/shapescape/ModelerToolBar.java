@@ -10,11 +10,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JToggleButton;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class ModelerToolBar extends JMenuBar implements ActionListener
@@ -25,15 +27,28 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 	
 	private JFileChooser browser;
 	
+	// File
+	private JMenu fileMenu;
+	
 	private JMenuItem newItem;
 	
 	private JMenuItem saveItem;
 	private JMenuItem saveAsItem;
-	
 	private JMenuItem openItem;
+	
+	// Edit
+	private JMenu editMenu;
 	
 	private JMenuItem scaleItem;
 	private JMenuItem undoItem;
+	
+	private JMenuItem setGridItem;
+	
+	// View
+	private JMenu viewMenu;
+	
+	private JToggleButton showGridItem;
+	private JToggleButton showBoundsItem;
 
 	public ModelerToolBar(ShapeScape modeler)
 	{
@@ -43,7 +58,7 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Custom Vector Graphics", "cvg");
 		browser.setFileFilter(filter);
 		
-		JMenu fileMenu = new JMenu("File");
+		fileMenu = new JMenu("File");
 		
 		newItem = new JMenuItem("New");
 		saveItem = new JMenuItem("Save");
@@ -61,7 +76,7 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 		fileMenu.add(saveAsItem);
 		fileMenu.add(openItem);
 		
-		JMenu editMenu = new JMenu("Edit");
+		editMenu = new JMenu("Edit");
 		
 		scaleItem = new JMenuItem("Scale");
 		undoItem = new JMenuItem("Undo");
@@ -73,14 +88,38 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 		editMenu.addSeparator();
 		editMenu.add(undoItem);
 		
+		viewMenu = new JMenu("View");
+		
+		showGridItem = new JCheckBox("Show Grid");
+		showBoundsItem = new JCheckBox("Show Bounding Box");
+		
+		showGridItem.addActionListener(this);
+		showBoundsItem.addActionListener(this);
+		
+		showGridItem.setSelected(true);
+		
+		viewMenu.add(showGridItem);
+		viewMenu.add(showBoundsItem);
+		
 		this.add(fileMenu);
 		this.add(editMenu);
+		this.add(viewMenu);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		if(e.getSource() == scaleItem)
+		if(e.getSource() == showGridItem)
+		{
+			modeler.setShowGrid(showGridItem.isSelected());
+			modeler.repaint();
+		}
+		else if(e.getSource() == showBoundsItem)
+		{
+			modeler.setShowBounds(showBoundsItem.isSelected());
+			modeler.repaint();
+		}
+		else if(e.getSource() == scaleItem)
 		{
 			String result = JOptionPane.showInputDialog(modeler, "Select the bounds to scale to", "Object Scaling", JOptionPane.PLAIN_MESSAGE);
 			
