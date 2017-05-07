@@ -122,7 +122,7 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		this.setFocusable(true);
 		this.addKeyListener(new KeyboardListener(this));
 		
-		this.setPreferredSize(new Dimension(500,500));
+		this.setPreferredSize(new Dimension(510,510));
 	}
 	
 	public void paint(Graphics g)
@@ -139,6 +139,8 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		
 		Graphics2D g2d = (Graphics2D)g;
 		
+		worldSpace = g2d.getTransform();
+		
 		normalStroke = g2d.getStroke();
 		
 		g2d.setPaint(Color.BLACK);
@@ -153,6 +155,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		int gridWindowX = xCopyNum*gridSize;
 		int gridWindowY = yCopyNum*gridSize;
 		
+		int gridXOffset = -(int)(viewSpace.getTranslateX()%gridSize);
+		int gridYOffset = -(int)(viewSpace.getTranslateY()%gridSize);
+		
 		/*
 		 Create a small subsection of grid, then copy it to the rest of the panel.
 		 */
@@ -160,7 +165,7 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		{
 			for(int gridY = 0; gridY < gridWindowY; gridY++)
 			{
-				if((gridX % gridSize == 0) || (gridY % gridSize == 0))
+				if(((gridX+gridXOffset) % gridSize == 0) || ((gridY+gridYOffset) % gridSize == 0))
 				{
 					g2d.drawLine(gridX, gridY, gridX, gridY);
 				}
@@ -178,7 +183,6 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		}
 		
 		/*Draw the model relative to the user's current view*/
-		worldSpace = g2d.getTransform();
 		g2d.setTransform(viewSpace);
 		
 		if(model.getVertices().size() > 0)
@@ -216,6 +220,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 			}
 		}
 		
+		g2d.setColor(Color.GREEN);
+		g2d.draw(model.generateBounds());
+		
 		/*Revert to world space for overlays.*/
 		g2d.setTransform(worldSpace);
 		
@@ -237,6 +244,21 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		g2d.drawString(String.format("%s, %s" , worldCursor.getX(), worldCursor.getY()), 3, getHeight()-3);
 	}
 	
+	public void resetScene()
+	{
+		model = new Model();
+		resetViewspace();
+	}
+	
+	protected void resetViewspace()
+	{
+		viewSpace = new AffineTransform();
+		
+		/**Reset last width and height to ensure origin ends up at the center of the panel.*/
+		lastWidth = 0;
+		lastHeight = 0;
+	}
+	
 	public void undoLastCommand()
 	{
 		commandQueue.undoLastCommand();
@@ -247,9 +269,9 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		createVertexAt((int)point.getX(), (int)point.getY());
 	}
 	
-	public void createVertexAt(int x, int y)
+	public void createVertexAt(double x, double y)
 	{
-		CreateVertexCommand createVertex = new CreateVertexCommand(this, new Point(x,y));
+		CreateVertexCommand createVertex = new CreateVertexCommand(this, new Point2D.Double(x,y));
 		
 		commandQueue.addCommand(createVertex);
 		commandQueue.executeNextCommand();
@@ -358,8 +380,8 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		
 		if(e.isControlDown())
 		{
-			cursor.x = (cursor.x/gridSize)*gridSize;
-			cursor.y = (cursor.y/gridSize)*gridSize;
+			cursor.x = (cursor.x/gridSize)*gridSize + (int)(viewSpace.getTranslateX()%gridSize);
+			cursor.y = (cursor.y/gridSize)*gridSize + (int)(viewSpace.getTranslateY()%gridSize);
 			
 			dragAnchor.x = (dragAnchor.x/gridSize)*gridSize;
 			dragAnchor.y = (dragAnchor.y/gridSize)*gridSize;
@@ -545,6 +567,26 @@ public class ShapeScape extends JPanel implements MouseListener, MouseMotionList
 		pointSpace.transform(point, worldPoint);
 		
 		return worldPoint;
+	}
+	
+	public Point2D toViewSpace(Point2D point, AffineTransform transform)
+	{
+		Point2D viewPoint = new Point2D.Double();
+		
+		AffineTransform pointSpace = new AffineTransform(worldSpace);
+		
+		pointSpace.concatenate(viewSpace);
+		
+		pointSpace.concatenate(transform);
+		
+		try {
+			pointSpace.inverseTransform(point, viewPoint);
+		} catch (NoninvertibleTransformException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return viewPoint;
 	}
 	
 	public Point2D viewToWorld(Point2D point)

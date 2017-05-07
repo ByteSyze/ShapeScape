@@ -15,7 +15,7 @@ public class Vertex extends Point2D implements Cloneable
 	
 	private boolean selected = false;
 	
-	public Vertex(Point point)
+	public Vertex(Point2D point)
 	{
 		grabBox = new Rectangle2D.Double(0,0,grabRadius,grabRadius);
 		setLocation(point);

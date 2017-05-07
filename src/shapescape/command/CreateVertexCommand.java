@@ -1,6 +1,7 @@
 package shapescape.command;
 
 import java.awt.Point;
+import java.awt.geom.Point2D;
 
 import shapescape.ShapeScape;
 import shapescape.Vertex;
@@ -9,11 +10,11 @@ public class CreateVertexCommand implements ReversibleCommand
 {
 	private ShapeScape modeler;
 	
-	private Point point;
+	private Point2D point;
 	
 	private Vertex vertex;
 	
-	public CreateVertexCommand(ShapeScape modeler, Point point)
+	public CreateVertexCommand(ShapeScape modeler, Point2D point)
 	{
 		this.modeler = modeler;
 		

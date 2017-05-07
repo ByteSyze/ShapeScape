@@ -14,6 +14,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class ModelerToolBar extends JMenuBar implements ActionListener
@@ -27,8 +28,11 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 	private JMenuItem newItem;
 	
 	private JMenuItem saveItem;
+	private JMenuItem saveAsItem;
+	
 	private JMenuItem openItem;
 	
+	private JMenuItem scaleItem;
 	private JMenuItem undoItem;
 
 	public ModelerToolBar(ShapeScape modeler)
@@ -43,23 +47,30 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 		
 		newItem = new JMenuItem("New");
 		saveItem = new JMenuItem("Save");
+		saveAsItem = new JMenuItem("Save As...");
 		openItem = new JMenuItem("Open");
 		
 		newItem.addActionListener(this);
 		saveItem.addActionListener(this);
+		saveAsItem.addActionListener(this);
 		openItem.addActionListener(this);
 		
 		fileMenu.add(newItem);
 		fileMenu.addSeparator();
 		fileMenu.add(saveItem);
+		fileMenu.add(saveAsItem);
 		fileMenu.add(openItem);
 		
 		JMenu editMenu = new JMenu("Edit");
 		
+		scaleItem = new JMenuItem("Scale");
 		undoItem = new JMenuItem("Undo");
 		
+		scaleItem.addActionListener(this);
 		undoItem.addActionListener(this);
 		
+		editMenu.add(scaleItem);
+		editMenu.addSeparator();
 		editMenu.add(undoItem);
 		
 		this.add(fileMenu);
@@ -69,19 +80,37 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		if(e.getSource() == undoItem)
+		if(e.getSource() == scaleItem)
+		{
+			String result = JOptionPane.showInputDialog(modeler, "Select the bounds to scale to", "Object Scaling", JOptionPane.PLAIN_MESSAGE);
+			
+			if(result == null)
+				return;
+			
+			String[] dimensions = result.split(" ");
+			
+			Rectangle newBounds = new Rectangle(0,0,Integer.parseInt(dimensions[0]), Integer.parseInt(dimensions[1]));
+			Rectangle bounds = modeler.getModel().getBounds();
+			
+			double xScale = newBounds.getWidth()/bounds.getWidth();
+			double yScale = newBounds.getHeight()/bounds.getHeight();
+			
+			modeler.getModel().applyDirectScaling(xScale, yScale);
+		}
+		else if(e.getSource() == undoItem)
 		{
 			modeler.undoLastCommand();
 		}
 		else if(e.getSource() == newItem)
 		{
 			modeler.getVertices().clear();
+			modeler.resetViewspace();
 		}
-		else if(e.getSource() == saveItem)
+		else if(e.getSource() == saveItem || e.getSource() == saveAsItem)
 		{
 			File saveFile = modeler.getSaveFile();
 			
-			if(saveFile == null)
+			if(saveFile == null || e.getSource() == saveAsItem)
 			{
 				int value = browser.showSaveDialog(modeler);
 				
@@ -120,6 +149,8 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 			
 			File saveFile = browser.getSelectedFile();
 			
+			modeler.resetScene();
+			
 			try
 			{
 				BufferedReader br = new BufferedReader(new FileReader(saveFile));
@@ -132,8 +163,8 @@ public class ModelerToolBar extends JMenuBar implements ActionListener
 				{
 					String[] coords = line.split(",");
 					
-					int x = (new Double(coords[0])).intValue() + offset;
-					int y = (new Double(coords[1])).intValue() + offset;
+					double x = new Double(coords[0]) + offset;
+					double y = new Double(coords[1]) + offset;
 					
 					modeler.createVertexAt(x, y);
 				}
